@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Caitlin's 40th · Birthday Trivia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Screen: Welcome -->
+  <section id="welcome" class="screen active">
+    <div class="frame" style="justify-content:center; text-align:center; gap:0.25rem;">
+      <div class="crest">40</div>
+      <h1 class="header-caps-lg">Caitlin's</h1>
+      <h2 class="script-text">Birthday Trivia</h2>
+      <div class="divider"></div>
+      <div class="name-input-group">
+        <label class="body-text" for="player-name">your name</label>
+        <input type="text" id="player-name" class="name-input" placeholder="Enter your name" autocomplete="off" maxlength="20">
+      </div>
+      <div class="divider" style="margin:0.6rem auto;"></div>
+      <p class="body-text">pick your emoji</p>
+      <div class="emoji-grid" id="emoji-grid"></div>
+      <button class="btn-primary" id="btn-start" disabled>Let's Go!</button>
+      <p class="subtitle" style="margin-top:0.75rem;">March 21, 2026</p>
+    </div>
+  </section>
+
+  <!-- Screen: Section Intros (reused by JS) -->
+  <section id="section-intro" class="screen">
+    <div class="frame intro-frame">
+      <p class="section-round" id="intro-round"></p>
+      <div class="section-icon" id="intro-icon"></div>
+      <h2 class="section-title" id="intro-title"></h2>
+      <div class="divider"></div>
+      <p class="section-desc" id="intro-desc"></p>
+      <p class="section-instructions" id="intro-instructions"></p>
+      <button class="btn-primary btn-section" id="btn-begin-section">Begin Round</button>
+    </div>
+  </section>
+
+  <!-- Screen: Question (single, content swapped by JS) -->
+  <section id="question" class="screen">
+    <div class="frame question-frame">
+      <div class="question-header">
+        <span class="header-caps" id="q-header-left"></span>
+        <span class="header-caps question-points" id="q-header-right"></span>
+      </div>
+      <div class="divider-full"></div>
+      <div class="question-body" id="question-body">
+        <!-- Dynamically populated -->
+      </div>
+      <div class="question-nav">
+        <button class="nav-btn" id="prev-btn" disabled>&larr; prev</button>
+        <button class="nav-btn" id="next-btn">next &rarr;</button>
+      </div>
+      <div class="divider-full"></div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </section>
+
+  <!-- Screen: Submit -->
+  <section id="submit" class="screen">
+    <div class="frame" style="justify-content:center; text-align:center; gap:0.6rem;">
+      <div class="crest" style="font-size:clamp(3rem,10vw,5rem);">40</div>
+      <h2 class="script-text">All answers in!</h2>
+      <div class="player-identity">
+        <span class="player-emoji-lg" id="submit-emoji"></span>
+        <span class="player-name-lg" id="submit-name"></span>
+      </div>
+      <div class="divider"></div>
+      <button class="btn-primary" id="copy-btn">Copy Link</button>
+      <textarea class="url-display" id="url-display" readonly></textarea>
+      <p class="body-text">Text this link to the host</p>
+      <div class="divider"></div>
+      <p class="unanswered-note" id="unanswered-note"></p>
+    </div>
+  </section>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

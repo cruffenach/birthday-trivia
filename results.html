@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Caitlin's 40th · Results</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Eval: URL Input -->
+  <section id="eval-input" class="screen active">
+    <div class="frame" style="justify-content:center; text-align:center; gap:0.5rem;">
+      <div class="crest" style="font-size:clamp(3rem,10vw,5rem);">40</div>
+      <h1 class="header-caps-lg">Results</h1>
+      <div class="divider"></div>
+      <p class="body-text">Paste player links below (one per line)</p>
+      <textarea class="eval-textarea" id="eval-urls" placeholder="https://...#data=...&#10;https://...#data=...&#10;https://...#data=..."></textarea>
+      <div class="eval-player-list" id="eval-players"></div>
+      <button class="btn-primary" id="btn-begin-eval" disabled>Begin Reveal</button>
+    </div>
+  </section>
+
+  <!-- Eval: Question Reveal -->
+  <section id="eval-reveal" class="screen">
+    <div class="frame eval-question-frame">
+      <div class="question-header" style="width:100%;">
+        <span class="header-caps" id="ev-header"></span>
+        <span class="header-caps question-points" id="ev-points"></span>
+      </div>
+      <div class="divider-full"></div>
+      <div class="eval-content" id="ev-content"></div>
+      <div class="divider-full"></div>
+      <div class="leaderboard collapsed" id="ev-leaderboard"></div>
+      <div class="question-nav">
+        <button class="nav-btn" id="ev-prev">&larr; prev</button>
+        <button class="nav-btn" id="ev-next" style="color:var(--section-color); font-weight:600;">next &rarr;</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Eval: Winner -->
+  <section id="eval-winner" class="screen">
+    <div class="frame display-frame">
+      <div class="crest" style="font-size:clamp(3rem,10vw,5rem);">40</div>
+      <h1 class="header-caps-lg" id="winner-label">The Winner</h1>
+      <div class="winner-emoji" id="w-emoji"></div>
+      <div class="winner-name" id="w-name"></div>
+      <div class="winner-score" id="w-score"></div>
+      <div class="divider"></div>
+      <div class="script-text-sm" style="color:var(--charcoal-soft);">Happy 40th, Caitlin!</div>
+      <div class="divider-full" style="margin-top:auto;"></div>
+      <div class="leaderboard" id="w-leaderboard" style="padding-bottom:0;"></div>
+    </div>
+    <div class="confetti-container" id="confetti"></div>
+  </section>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+  <script src="results.js"></script>
+</body>
+</html>
