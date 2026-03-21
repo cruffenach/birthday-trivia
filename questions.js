@@ -11,7 +11,7 @@ var SECTIONS = [
     color: '#D4A853',
     icon: '✦',
     intro: 'Broadway has been in Caitlin\x27s life forever — as a performer, a devoted audience member, and the person who turned Collin into a Broadway fan. Let\x27s see how well you know the Great White Way.',
-    instructions: 'Listen to each clip. Name the song, the musical, and the year it debuted on Broadway.'
+    instructions: 'Listen to each clip. Name the song, the musical, and the year it debuted on Broadway. 100 points each — 300 per song.'
   },
   {
     id: 'movies',
@@ -20,7 +20,7 @@ var SECTIONS = [
     color: '#C47A8A',
     icon: '🎬',
     intro: 'Caitlin has always loved movies. But that sweet spot of 90s love-conquers-all mega rom-coms is where it all started. How well do you know some of Caitlin\x27s favorite movies?',
-    instructions: 'Look at the cast, the year, and the genre — then name the movie, its box office gross, and its Rotten Tomatoes score.'
+    instructions: 'Look at the cast, the year, and the genre. Name the movie (100 pts), guess the domestic box office and RT score. The closer you get, the more you earn — up to 300 for a near-perfect guess.'
   },
   {
     id: 'pir',
@@ -29,7 +29,7 @@ var SECTIONS = [
     color: '#7A9B6D',
     icon: '$',
     intro: 'On sick days, little Caitlin would curl up on the second floor of her mom\'s pediatric office and watch The Price is Right, yelling guesses at the TV.',
-    instructions: 'Guess the price — closest without going over wins.'
+    instructions: 'Guess the price — closest without going over takes all 1,000 points.'
   }
 ];
 
@@ -48,7 +48,7 @@ var BROADWAY = [
     song: 'I Dreamed a Dream',
     musical: 'Les Misérables',
     year: 1987,
-    fun_fact: 'Les Mis opened on Broadway March 12, 1987 at the Broadway Theatre. It\'s the longest-running musical in West End history and has been seen by over 150 million people in 50+ countries. Susan Boyle\'s 2009 audition of this song became the most-watched YouTube video of the year.'
+    fun_fact: 'Caitlin and Collin saw Les Mis on Broadway almost exactly 10 years ago for her 30th birthday. It opened on Broadway in 1987 and has been seen by over 150 million people worldwide.'
   },
   {
     id: 'b3',
@@ -64,7 +64,7 @@ var BROADWAY = [
     song: 'Hello!',
     musical: 'The Book of Mormon',
     year: 2011,
-    fun_fact: 'The Book of Mormon opened March 24, 2011 at the Eugene O\'Neill Theatre. It won 9 of its 14 Tony nominations including Best Musical. Trey Parker and Matt Stone wrote it in secret for years — when they announced the project, almost no one believed it would work.'
+    fun_fact: 'Caitlin went out on a limb and got Collin tickets to Book of Mormon in Portland for his birthday. It was a huge hit — for both of them.'
   },
   {
     id: 'b5',
@@ -72,7 +72,7 @@ var BROADWAY = [
     song: 'Seasons of Love',
     musical: 'Rent',
     year: 1996,
-    fun_fact: '"525,600 minutes" — the real number of minutes in a non-leap year. Rent opened on Broadway April 29, 1996 and ran 5,123 performances. Jonathan Larson tragically died the night before its first preview. He never saw his masterpiece open.'
+    fun_fact: 'Fun fact: Caitlin hasn\x27t paid rent since her and Collin got their first home together in Portland in 2014.'
   }
 ];
 
@@ -139,7 +139,7 @@ var MOVIES = [
     title: '10 Things I Hate About You',
     box_office: 38,
     rt_score: 71,
-    fun_fact: 'Based on Shakespeare\'s The Taming of the Shrew. Heath Ledger\'s singing-and-dancing scene on the bleachers was done in one take — the marching band wasn\'t told what was happening.'
+    fun_fact: 'Based on Shakespeare\x27s The Taming of the Shrew. Caitlin couldn\x27t get enough of Heath Ledger\x27s famous dance in the bleachers.'
   },
   {
     id: 'm5',
@@ -171,7 +171,7 @@ var MOVIES = [
     title: "You've Got Mail",
     box_office: 116,
     rt_score: 69,
-    fun_fact: 'Nora Ephron directed both this and Sleepless in Seattle — making it the second Hanks-Ryan pairing. The AOL "You\'ve Got Mail" sound effect was used so many times during filming that the crew started groaning.'
+    fun_fact: 'This movie set Caitlin\x27s heart on finding someone who was good with computers. She found exactly the right person in Collin.'
   }
 ];
 

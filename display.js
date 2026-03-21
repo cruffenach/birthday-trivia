@@ -93,7 +93,7 @@
 
     if (s.section === 'broadway') {
       var q = BROADWAY[s.index];
-      $('d-q-points').textContent = '300 pts';
+      $('d-q-points').textContent = '';
 
       // Large audio player
       var player = document.createElement('div');
@@ -178,7 +178,7 @@
 
     } else if (s.section === 'movies') {
       var q = MOVIES[s.index];
-      $('d-q-points').textContent = '300 pts';
+      $('d-q-points').textContent = '';
 
       // Headshots
       var grid = document.createElement('div');
@@ -219,7 +219,7 @@
 
     } else if (s.section === 'pir') {
       var yr = PRICE_IS_RIGHT[s.index];
-      $('d-q-points').textContent = (yr.items.length * 200) + ' pts';
+      $('d-q-points').textContent = '';
 
       var header = document.createElement('div');
       header.className = 'pir-year-header';

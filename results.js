@@ -129,17 +129,17 @@
 
     if (q.section === 'broadway') {
       renderBroadwayReveal(content, q.index);
-      $('ev-points').textContent = '300 pts';
+      $('ev-points').textContent = '';
     } else if (q.section === 'movies') {
       renderMovieReveal(content, q.index);
-      $('ev-points').textContent = '300 pts';
+      $('ev-points').textContent = '';
     } else if (q.section === 'pir') {
       renderPIRReveal(content, q.index);
       var itemCount = PRICE_IS_RIGHT[q.index].items.length;
-      $('ev-points').textContent = (itemCount * 200) + ' pts';
+      $('ev-points').textContent = '';
     }
 
-    renderLeaderboard($('ev-leaderboard'));
+    $('ev-leaderboard').innerHTML = '';
     $('ev-leaderboard').classList.add('collapsed');
     stage = 0;
     $('ev-content').style.display = '';
@@ -307,18 +307,18 @@
       var titleMatch = fuzzyMatch(ans[0], q.title);
       var boTier = numericTierScore(ans[1], q.box_office);
       var rtTier = numericTierScore(ans[2], q.rt_score);
-      var boMatch_unused = boTier.pts > 0; // within ±5pts on 100 scale
+      var boMatch = boTier.pts > 0;
+      var rtMatch = rtTier.pts > 0;
 
       var pts = 0;
       if (titleMatch) pts += 100;
-      if (boMatch) pts += 100;
-      if (rtMatch) pts += 100;
-      // scores calculated by recalcScoresUpTo
+      pts += boTier.pts;
+      pts += rtTier.pts;
 
       var card = createPlayerCard(p, [
         { label: 'Movie', value: ans[0] || '—', correct: titleMatch },
-        { label: 'Box Office', value: ans[1] ? '$' + ans[1] + 'M' : '—', correct: boMatch },
-        { label: 'RT', value: ans[2] ? ans[2] + '%' : '—', correct: rtMatch }
+        { label: 'Box Office', value: ans[1] ? '$' + ans[1] + 'M' : '—', correct: boMatch, tier: boTier.tier, tierPts: boTier.pts },
+        { label: 'RT', value: ans[2] ? ans[2] + '%' : '—', correct: rtMatch, tier: rtTier.tier, tierPts: rtTier.pts }
       ], pts);
       row.appendChild(card);
     });
@@ -397,7 +397,7 @@
           '</div>' +
           '<p class="eval-card-answer">' + (guess > 0 ? '$' + formatNum(guess) : '—') +
           (isOver ? ' <span style="color:var(--incorrect);font-size:0.8rem;">OVER</span>' : '') +
-          (isWinner ? ' <span style="color:var(--correct);font-size:0.8rem;">✓ +200</span>' : '') +
+          (isWinner ? ' <span style="color:var(--correct);font-size:0.8rem;">✓ +1000</span>' : '') +
           '</p>';
         row.appendChild(card);
       });
@@ -899,7 +899,7 @@
       var eligible = guesses.filter(function (g) { return g.guess > 0 && g.guess <= item.price; });
       eligible.sort(function (a, b) { return b.guess - a.guess; });
       if (eligible.length > 0) {
-        scores[eligible[0].playerIdx].score += 200;
+        scores[eligible[0].playerIdx].score += 1000;
       }
     });
   }

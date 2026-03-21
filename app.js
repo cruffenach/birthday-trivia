@@ -251,14 +251,14 @@
 
     if (screen.section === 'broadway') {
       renderBroadwayQuestion(body, screen.index);
-      $('q-header-right').textContent = '300 pts';
+      $('q-header-right').textContent = '';
     } else if (screen.section === 'movies') {
       renderMovieQuestion(body, screen.index);
-      $('q-header-right').textContent = '300 pts';
+      $('q-header-right').textContent = '';
     } else if (screen.section === 'pir') {
       renderPIRQuestion(body, screen.index);
       var itemCount = PRICE_IS_RIGHT[screen.index].items.length;
-      $('q-header-right').textContent = (itemCount * 200) + ' pts';
+      $('q-header-right').textContent = '';
     }
 
     // Nav buttons
