@@ -10,7 +10,7 @@ var SECTIONS = [
     round: 1,
     color: '#D4A853',
     icon: '✦',
-    intro: 'Caitlin and Collin have seen an extraordinary number of Broadway shows together — Hamilton, Wicked, Dear Evan Hansen, and so many more. She cries at every single one.',
+    intro: 'Broadway has been in Caitlin\x27s life forever — as a performer, a devoted audience member, and the person who turned Collin into a Broadway fan. Let\x27s see how well you know the Great White Way.',
     instructions: 'Listen to each clip. Name the song, the musical, and the year it debuted on Broadway.'
   },
   {
@@ -19,7 +19,7 @@ var SECTIONS = [
     round: 2,
     color: '#C47A8A',
     icon: '🎬',
-    intro: 'From wearing out two VHS copies of The Little Mermaid to seeing Sleepless in Seattle approximately 400 times, Caitlin has always been a movie girl.',
+    intro: 'Caitlin has always loved movies. But that sweet spot of 90s love-conquers-all mega rom-coms is where it all started. How well do you know some of Caitlin\x27s favorite movies?',
     instructions: 'Look at the cast, the year, and the genre — then name the movie, its box office gross, and its Rotten Tomatoes score.'
   },
   {
@@ -79,6 +79,7 @@ var BROADWAY = [
 var MOVIES = [
   {
     id: 'm1',
+    poster: 'assets/images/movies/clueless-poster.png',
     cast: [
       { actor: 'Alicia Silverstone', image: 'assets/images/movies/clueless-silverstone.png' },
       { actor: 'Paul Rudd', image: 'assets/images/movies/clueless-rudd.png' },
@@ -94,6 +95,7 @@ var MOVIES = [
   },
   {
     id: 'm2',
+    poster: 'assets/images/movies/departed-poster.png',
     cast: [
       { actor: 'Leonardo DiCaprio', image: 'assets/images/movies/departed-dicaprio.png' },
       { actor: 'Matt Damon', image: 'assets/images/movies/departed-damon.png' },
@@ -109,6 +111,7 @@ var MOVIES = [
   },
   {
     id: 'm3',
+    poster: 'assets/images/movies/sleepless-poster.png',
     cast: [
       { actor: 'Tom Hanks', image: 'assets/images/movies/sleepless-hanks.png' },
       { actor: 'Meg Ryan', image: 'assets/images/movies/sleepless-ryan.png' },
@@ -124,6 +127,7 @@ var MOVIES = [
   },
   {
     id: 'm4',
+    poster: 'assets/images/movies/10things-poster.png',
     cast: [
       { actor: 'Heath Ledger', image: 'assets/images/movies/10things-ledger.png' },
       { actor: 'Julia Stiles', image: 'assets/images/movies/10things-stiles.png' },
@@ -139,6 +143,7 @@ var MOVIES = [
   },
   {
     id: 'm5',
+    poster: 'assets/images/movies/soundofmusic-poster.png',
     cast: [
       { actor: 'Julie Andrews', image: 'assets/images/movies/soundofmusic-andrews.png' },
       { actor: 'Christopher Plummer', image: 'assets/images/movies/soundofmusic-plummer.png' },
@@ -154,6 +159,7 @@ var MOVIES = [
   },
   {
     id: 'm6',
+    poster: 'assets/images/movies/youvegotmail-poster.png',
     cast: [
       { actor: 'Tom Hanks', image: 'assets/images/movies/youvegotmail-hanks.png' },
       { actor: 'Meg Ryan', image: 'assets/images/movies/youvegotmail-ryan.png' },
@@ -177,24 +183,12 @@ var PRICE_IS_RIGHT = [
     items: [
       {
         type: 'toy',
-        badge: 'THE HOTTEST TOY!',
-        name: 'Super Soaker 50',
-        description: 'The water gun that changed summers forever',
-        price: 10
-      },
-      {
-        type: 'car',
-        badge: 'A BRAND NEW CAR!',
-        name: '1991 Honda Accord DX',
-        description: 'The best-selling car in America that year',
-        price: 12400
-      },
-      {
-        type: 'home',
-        badge: 'A NEW HOME!',
-        name: 'Average new home in Arizona',
-        description: 'A brand new house in the Grand Canyon State',
-        price: 92000
+        badge: 'THE HOTTEST TOY\!',
+        name: 'Super Nintendo (SNES)',
+        image: 'assets/images/pir/super-nintendo.png',
+        description: 'The #1 Christmas gift of 1991',
+        price: 199.95,
+        fun_fact: 'Lonnie Johnson, a NASA engineer, invented the Super Soaker by accident while working on a heat pump. Larami sold 27 million of them at $10 each in the first three years.'
       }
     ]
   },
@@ -205,24 +199,12 @@ var PRICE_IS_RIGHT = [
     items: [
       {
         type: 'toy',
-        badge: 'THE HOTTEST TOY!',
-        name: 'Mighty Morphin Power Rangers Megazord',
-        description: 'The must-have action figure of Christmas 1993',
-        price: 25
-      },
-      {
-        type: 'car',
-        badge: 'A BRAND NEW CAR!',
-        name: '1993 Honda Accord DX',
-        description: 'The best-selling car in America that year',
-        price: 13500
-      },
-      {
-        type: 'home',
-        badge: 'A NEW HOME!',
-        name: 'Average new home in Arizona',
-        description: 'A brand new house in the Grand Canyon State',
-        price: 97000
+        badge: 'THE HOTTEST TOY\!',
+        name: 'Samantha American Girl Doll',
+        image: 'assets/images/pir/samantha.png',
+        description: 'This was Caitlin\x27s American Girl doll. Now Charlotte is carrying on the tradition.',
+        price: 65,
+        fun_fact: 'Samantha was Caitlin\x27s American Girl doll. Samantha, Kirsten, and Molly were the original three dolls, launched in 1986 — the same year Caitlin was born.'
       }
     ]
   },
@@ -232,25 +214,13 @@ var PRICE_IS_RIGHT = [
     age: 9,
     items: [
       {
-        type: 'toy',
-        badge: 'THE HOTTEST TOY!',
-        name: 'Beanie Babies',
-        description: 'The stuffed animals that started a collecting craze',
-        price: 5
-      },
-      {
-        type: 'car',
-        badge: 'A BRAND NEW CAR!',
-        name: '1995 Honda Accord DX',
-        description: 'The best-selling car in America — three-peat',
-        price: 14800
-      },
-      {
         type: 'home',
-        badge: 'A NEW HOME!',
+        badge: 'A NEW HOME\!',
         name: 'Average new home in Arizona',
+        image: 'assets/images/pir/house.png',
         description: 'A brand new house in the Grand Canyon State',
-        price: 109000
+        price: 79700,
+        fun_fact: 'That same house in Arizona today would cost you about $450,000. The 90s were a different time.'
       }
     ]
   },
@@ -260,25 +230,13 @@ var PRICE_IS_RIGHT = [
     age: 11,
     items: [
       {
-        type: 'toy',
-        badge: 'THE HOTTEST TOY!',
-        name: 'Tamagotchi',
-        description: 'The virtual pet that needed constant attention',
-        price: 18
-      },
-      {
         type: 'car',
-        badge: 'A BRAND NEW CAR!',
+        badge: 'A BRAND NEW CAR\!',
         name: '1997 Toyota Camry CE',
-        description: 'The best-selling car in America that year',
-        price: 15748
-      },
-      {
-        type: 'home',
-        badge: 'A NEW HOME!',
-        name: 'Average new home in Arizona',
-        description: 'A brand new house in the Grand Canyon State',
-        price: 120000
+        image: 'assets/images/pir/camry.png',
+        description: 'The best-selling car in America that year — and Caitlin\x27s ride most of the time',
+        price: 16608,
+        fun_fact: 'Years later, a blue Toyota Camry would become the car Charlotte spent her childhood in. That, and the Mazda minivan — affectionately known as "The Ban."'
       }
     ]
   },
@@ -289,24 +247,12 @@ var PRICE_IS_RIGHT = [
     items: [
       {
         type: 'toy',
-        badge: 'THE HOTTEST TOY!',
-        name: 'Pokémon Trading Cards Starter Set',
-        description: 'Gotta catch \'em all — the craze that swept every schoolyard',
-        price: 10
-      },
-      {
-        type: 'car',
-        badge: 'A BRAND NEW CAR!',
-        name: '1999 Toyota Camry CE',
-        description: 'The best-selling car in America — again',
-        price: 16278
-      },
-      {
-        type: 'home',
-        badge: 'A NEW HOME!',
-        name: 'Average new home in Arizona',
-        description: 'A brand new house in the Grand Canyon State',
-        price: 130000
+        badge: 'A BRAND NEW CD\!',
+        name: "No Doubt Concert Ticket",
+        image: 'assets/images/pir/no-doubt.png',
+        description: "Caitlin's first concert was No Doubt. What did a ticket cost?",
+        price: 22.50,
+        fun_fact: "Caitlin went to her very first concert with her dad and her best friend Amanda — No Doubt on the Tragic Kingdom tour. She was thirteen. Gwen Stefani was on that stage and it was everything."
       }
     ]
   }

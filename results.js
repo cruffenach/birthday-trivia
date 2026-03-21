@@ -11,6 +11,7 @@
   var players = [];     // [{ name, emoji, answers: { b, m, p } }]
   var scores = [];      // [{ name, emoji, score }]
   var currentQ = 0;
+  var stage = 0; // 0 = question result, 1 = leaderboard
   var questionList = []; // flat list of { section, index, qNum }
 
   // Build question list
@@ -42,14 +43,47 @@
 
   function parseUrls() {
     var text = $('eval-urls').value.trim();
-    var lines = text.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
 
     players = [];
     var chipContainer = $('eval-players');
     chipContainer.innerHTML = '';
 
-    lines.forEach(function (line) {
-      var data = window.decodePlayerUrl(line);
+    // Strategy: try each line individually first. If a line doesn't decode,
+    // try joining it with the next line (handles word-wrapped base64).
+    var lines = text.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
+    var entries = [];
+    var i = 0;
+    while (i < lines.length) {
+      var candidate = lines[i];
+      var result = window.decodePlayerUrl(candidate);
+      if (result && result.n) {
+        entries.push(candidate);
+        i++;
+      } else {
+        // Try joining with subsequent lines (word-wrapped blob)
+        var found = false;
+        var joined = candidate;
+        for (var j = i + 1; j < lines.length; j++) {
+          joined += lines[j];
+          result = window.decodePlayerUrl(joined);
+          if (result && result.n) {
+            entries.push(joined);
+            i = j + 1;
+            found = true;
+            break;
+          }
+        }
+        if (!found) i++; // skip undecodable line
+      }
+    }
+
+    console.log('[RESULTS] parseUrls: entries found:', entries.length);
+
+
+    entries.forEach(function (entry) {
+      console.log('[RESULTS] trying entry, length:', entry.length, 'first 80:', entry.substring(0, 80));
+      var data = window.decodePlayerUrl(entry);
+      console.log('[RESULTS] decoded:', data);
       if (data && data.n) {
         players.push({
           name: data.n,
@@ -75,13 +109,13 @@
     if (players.length === 0) return;
     scores = players.map(function (p) { return { name: p.name, emoji: p.emoji, score: 0 }; });
     currentQ = 0;
-    renderReveal(0);
+    goToReveal(0);
     showScreen('eval-reveal');
   }
 
   // ── Render Reveal ──────────────────────────
 
-  function renderReveal(idx) {
+  function renderRevealNoScore(idx) {
     currentQ = idx;
     var q = questionList[idx];
     var sec = SECTIONS.find(function (s) { return s.id === q.section; });
@@ -106,9 +140,11 @@
     }
 
     renderLeaderboard($('ev-leaderboard'));
-
+    $('ev-leaderboard').classList.add('collapsed');
+    stage = 0;
+    $('ev-content').style.display = '';
     $('ev-prev').disabled = (idx === 0);
-    $('ev-next').textContent = (idx === questionList.length - 1) ? 'Show Winner →' : 'Next →';
+    updateNextButton();
   }
 
   // ── Broadway Reveal ────────────────────────
@@ -214,7 +250,7 @@
       if (songMatch) pts += 100;
       if (musicalMatch) pts += 100;
       if (yearMatch) pts += 100;
-      scores[pi].score += pts;
+      // scores calculated by recalcScoresUpTo
 
       var card = createPlayerCard(p, [
         { label: 'Song', value: ans[0] || '—', correct: songMatch },
@@ -230,6 +266,21 @@
 
   function renderMovieReveal(container, index) {
     var q = MOVIES[index];
+
+    // Movie poster
+    if (q.poster) {
+      var posterWrap = document.createElement("div");
+      posterWrap.style.textAlign = "center";
+      posterWrap.style.marginBottom = "0.5rem";
+      var posterImg = document.createElement("img");
+      posterImg.src = q.poster;
+      posterImg.alt = q.title;
+      posterImg.style.maxHeight = "32vh";
+      posterImg.style.borderRadius = "6px";
+      posterImg.style.boxShadow = "0 2px 10px rgba(0,0,0,0.15)";
+      posterWrap.appendChild(posterImg);
+      container.appendChild(posterWrap);
+    }
 
     var correct = document.createElement('div');
     correct.className = 'eval-correct-area';
@@ -254,14 +305,15 @@
     players.forEach(function (p, pi) {
       var ans = (p.answers.m && p.answers.m[index]) || ['', '', ''];
       var titleMatch = fuzzyMatch(ans[0], q.title);
-      var boMatch = numericClose(ans[1], q.box_office, 0.2); // within 20%
-      var rtMatch = numericClose(ans[2], q.rt_score, 0.07); // within ±5pts on 100 scale
+      var boTier = numericTierScore(ans[1], q.box_office);
+      var rtTier = numericTierScore(ans[2], q.rt_score);
+      var boMatch_unused = boTier.pts > 0; // within ±5pts on 100 scale
 
       var pts = 0;
       if (titleMatch) pts += 100;
       if (boMatch) pts += 100;
       if (rtMatch) pts += 100;
-      scores[pi].score += pts;
+      // scores calculated by recalcScoresUpTo
 
       var card = createPlayerCard(p, [
         { label: 'Movie', value: ans[0] || '—', correct: titleMatch },
@@ -288,6 +340,18 @@
         '<span class="pir-item-name" style="display:inline;font-size:0.95rem;">' + item.name + '</span>';
       itemSection.appendChild(hdr);
 
+      // Showcase image
+      if (item.image) {
+        var showcase = document.createElement("div");
+        showcase.className = "pir-showcase";
+        var sImg = document.createElement("img");
+        sImg.className = "pir-showcase-img";
+        sImg.src = item.image;
+        sImg.alt = item.name;
+        showcase.appendChild(sImg);
+        itemSection.appendChild(showcase);
+      }
+
       var correctLine = document.createElement('p');
       correctLine.className = 'eval-correct-value';
       correctLine.style.fontSize = '1rem';
@@ -297,7 +361,7 @@
       // Player guesses — closest without going over
       var guesses = players.map(function (p, pi) {
         var pirAnswers = p.answers.p && p.answers.p[index] ? p.answers.p[index] : [];
-        var guess = parseInt(pirAnswers[itemIdx], 10) || 0;
+        var guess = parseFloat(pirAnswers[itemIdx]) || 0;
         return { playerIdx: pi, guess: guess };
       });
 
@@ -307,7 +371,7 @@
       var winnerIdx = eligible.length > 0 ? eligible[0].playerIdx : -1;
 
       if (winnerIdx >= 0) {
-        scores[winnerIdx].score += 200;
+        // scores calculated by recalcScoresUpTo
       }
 
       // Show guesses
@@ -338,6 +402,16 @@
         row.appendChild(card);
       });
       itemSection.appendChild(row);
+
+      // Fun fact
+      if (item.fun_fact) {
+        var ff = document.createElement('p');
+        ff.className = 'eval-fun-fact';
+        ff.style.marginTop = '0.4rem';
+        ff.textContent = item.fun_fact;
+        itemSection.appendChild(ff);
+      }
+
       container.appendChild(itemSection);
     });
   }
@@ -432,6 +506,19 @@
     return diff <= tolerance;
   }
 
+  function numericTierScore(input, target) {
+    if (!input) return { pts: 0, tier: null };
+    var val = parseInt(input, 10);
+    if (isNaN(val)) return { pts: 0, tier: null };
+    var diff = Math.abs(val - target) / Math.max(target, 1);
+    if (diff <= 0.01) return { pts: 300, tier: '1%' };
+    if (diff <= 0.05) return { pts: 100, tier: '5%' };
+    if (diff <= 0.10) return { pts: 50, tier: '10%' };
+    if (diff <= 0.20) return { pts: 25, tier: '20%' };
+    return { pts: 0, tier: null };
+  }
+
+
   function formatNum(n) {
     return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
@@ -494,6 +581,173 @@
     });
   }
 
+
+  // ── Animated Leaderboard ─────────────────
+
+  function animateLeaderboard(container) {
+    // Phase 0: Calculate before/after scores
+    var prevScores, newScores;
+
+    // Scores before this question
+    if (currentQ > 0) {
+      recalcScoresUpTo(currentQ - 1);
+      prevScores = scores.map(function (s) { return { name: s.name, emoji: s.emoji, score: s.score }; });
+    } else {
+      prevScores = players.map(function (p) { return { name: p.name, emoji: p.emoji, score: 0 }; });
+    }
+
+    // Scores after this question
+    recalcScoresUpTo(currentQ);
+    newScores = scores.map(function (s) { return { name: s.name, emoji: s.emoji, score: s.score }; });
+
+    // Calculate deltas
+    var deltas = {};
+    newScores.forEach(function (ns) {
+      var prev = prevScores.find(function (ps) { return ps.name === ns.name; });
+      deltas[ns.name] = ns.score - (prev ? prev.score : 0);
+    });
+
+    // Phase 1: Render with previous scores, sorted by prev ranking
+    var prevSorted = prevScores.slice().sort(function (a, b) { return b.score - a.score; });
+    var newSorted = newScores.slice().sort(function (a, b) { return b.score - a.score; });
+    var maxOld = prevSorted.length > 0 && prevSorted[0].score > 0 ? prevSorted[0].score : 1;
+    var maxNew = newSorted.length > 0 && newSorted[0].score > 0 ? newSorted[0].score : 1;
+
+    container.innerHTML = '';
+
+    var title = document.createElement('p');
+    title.className = 'header-caps leaderboard-title';
+    title.textContent = 'Leaderboard';
+    container.appendChild(title);
+
+    var rows = {};
+    prevSorted.forEach(function (s, i) {
+      var row = document.createElement('div');
+      row.className = 'leaderboard-row';
+      row.dataset.name = s.name;
+      row.style.transition = 'transform 0.6s ease';
+
+      var rank = document.createElement('span');
+      rank.className = 'lb-rank';
+      rank.textContent = (i + 1) + '.';
+      row.appendChild(rank);
+
+      var emoji = document.createElement('span');
+      emoji.className = 'lb-emoji';
+      emoji.textContent = s.emoji;
+      row.appendChild(emoji);
+
+      var name = document.createElement('span');
+      name.className = 'lb-name';
+      name.textContent = s.name;
+      row.appendChild(name);
+
+      var barBg = document.createElement('div');
+      barBg.className = 'lb-bar-bg';
+      var barFill = document.createElement('div');
+      barFill.className = 'lb-bar-fill';
+      barFill.style.width = (s.score / maxOld * 100) + '%';
+      barFill.style.transition = 'width 0.8s ease';
+      barBg.appendChild(barFill);
+      row.appendChild(barBg);
+
+      var scoreEl = document.createElement('span');
+      scoreEl.className = 'lb-score';
+      scoreEl.textContent = s.score;
+      row.appendChild(scoreEl);
+
+      // Delta badge (hidden initially)
+      var badge = document.createElement('span');
+      badge.className = 'lb-delta-badge';
+      badge.style.opacity = '0';
+      var d = deltas[s.name] || 0;
+      if (d > 0) badge.textContent = '+' + d;
+      row.appendChild(badge);
+
+      container.appendChild(row);
+      rows[s.name] = { row: row, scoreEl: scoreEl, barFill: barFill, badge: badge, rank: rank };
+    });
+
+    // Phase 2: After delay, animate scores counting up
+    setTimeout(function () {
+      prevSorted.forEach(function (ps) {
+        var ns = newScores.find(function (n) { return n.name === ps.name; });
+        var entry = rows[ps.name];
+        var delta = deltas[ps.name] || 0;
+
+        if (delta > 0) {
+          // Show delta badge
+          entry.badge.style.transition = 'opacity 0.3s ease';
+          entry.badge.style.opacity = '1';
+
+          // Animate score number
+          var startVal = ps.score;
+          var endVal = ns.score;
+          var startTime = performance.now();
+          var duration = 800;
+          function tick(now) {
+            var t = Math.min((now - startTime) / duration, 1);
+            t = t * t * (3 - 2 * t); // smoothstep
+            var current = Math.round(startVal + (endVal - startVal) * t);
+            entry.scoreEl.textContent = current;
+            if (t < 1) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+
+          // Animate bar
+          entry.barFill.style.width = (ns.score / maxNew * 100) + '%';
+        } else {
+          // Just update bar scale for new max
+          entry.barFill.style.width = (ns.score / maxNew * 100) + '%';
+        }
+      });
+
+      // Phase 3: After scores finish, reorder rows with FLIP
+      setTimeout(function () {
+        // Fade out delta badges
+        Object.keys(rows).forEach(function (name) {
+          rows[name].badge.style.opacity = '0';
+        });
+
+        // Capture old positions
+        var oldPositions = {};
+        Object.keys(rows).forEach(function (name) {
+          oldPositions[name] = rows[name].row.getBoundingClientRect().top;
+        });
+
+        // Re-sort DOM
+        newSorted.forEach(function (ns, i) {
+          var entry = rows[ns.name];
+          container.appendChild(entry.row);
+          entry.rank.textContent = (i + 1) + '.';
+          // Update bar colors for new ranking
+          entry.barFill.className = 'lb-bar-fill';
+          if (i === 0) entry.barFill.classList.add('first');
+          else if (i === 1) entry.barFill.classList.add('second');
+          else if (i === 2) entry.barFill.classList.add('third');
+        });
+
+        // FLIP: calculate delta and apply inverse transform
+        requestAnimationFrame(function () {
+          Object.keys(rows).forEach(function (name) {
+            var newTop = rows[name].row.getBoundingClientRect().top;
+            var deltaY = oldPositions[name] - newTop;
+            if (Math.abs(deltaY) > 1) {
+              rows[name].row.style.transition = 'none';
+              rows[name].row.style.transform = 'translateY(' + deltaY + 'px)';
+
+              requestAnimationFrame(function () {
+                rows[name].row.style.transition = 'transform 0.6s ease';
+                rows[name].row.style.transform = 'translateY(0)';
+              });
+            }
+          });
+        });
+      }, 900);
+
+    }, 500);
+  }
+
   // ── Winner ─────────────────────────────────
 
   function showWinner() {
@@ -536,24 +790,67 @@
   // ── Init ───────────────────────────────────
 
   function init() {
-    $('eval-urls').addEventListener('input', parseUrls);
+    $('eval-urls').addEventListener('input', function () { console.log('[EVENT] input fired'); parseUrls(); });
+    $('eval-urls').addEventListener('paste', function () { console.log('[EVENT] paste fired'); setTimeout(parseUrls, 50); });
+    $('eval-urls').addEventListener('change', function () { console.log('[EVENT] change fired'); parseUrls(); });
+    $('eval-urls').addEventListener('keyup', function () { console.log('[EVENT] keyup fired'); parseUrls(); });
+    $('eval-urls').addEventListener('paste', function () { setTimeout(parseUrls, 50); });
+    $('eval-urls').addEventListener('change', parseUrls);
     $('btn-begin-eval').addEventListener('click', beginReveal);
 
     $('ev-prev').addEventListener('click', function () {
-      if (currentQ > 0) {
-        // Recalculate scores from scratch up to prev question
-        recalcScoresUpTo(currentQ - 1);
-        renderReveal(currentQ - 1);
+      if (stage === 1) {
+        // Go back to question from leaderboard
+        stage = 0;
+        $('ev-leaderboard').classList.add('collapsed');
+        $('ev-content').style.display = '';
+        var q = questionList[currentQ];
+        var sec = SECTIONS.find(function (s) { return s.id === q.section; });
+        $('ev-header').innerHTML = '<span class="section-badge">' + sec.icon + ' ' + sec.name + '</span>  Q ' + q.qNum + ' of ' + TOTAL_Q;
+        updateNextButton();
+        $('ev-prev').disabled = (currentQ === 0);
+      } else if (currentQ > 0) {
+        goToReveal(currentQ - 1);
+        $('ev-content').style.display = '';
       }
     });
 
     $('ev-next').addEventListener('click', function () {
-      if (currentQ < questionList.length - 1) {
-        renderReveal(currentQ + 1);
+      if (stage === 0) {
+        // Show leaderboard
+        stage = 1;
+        $('ev-leaderboard').classList.remove('collapsed');
+        animateLeaderboard($('ev-leaderboard'));
+        $('ev-content').style.display = 'none';
+        $('ev-header').innerHTML = '<span class="section-badge">Standings</span>  After Q ' + (currentQ + 1) + ' of ' + TOTAL_Q;
+        $('ev-points').textContent = '';
+        updateNextButton();
+        $('ev-prev').disabled = false;
       } else {
-        showWinner();
+        // Advance to next question or winner
+        if (currentQ < questionList.length - 1) {
+          goToReveal(currentQ + 1);
+          $('ev-content').style.display = '';
+        } else {
+          recalcScoresUpTo(questionList.length - 1);
+          showWinner();
+        }
       }
     });
+  }
+
+  function updateNextButton() {
+    var isLast = currentQ === questionList.length - 1;
+    if (stage === 0) {
+      $("ev-next").textContent = "Leaderboard →";
+    } else {
+      $("ev-next").textContent = isLast ? "Show Winner →" : "Next →";
+    }
+  }
+
+  function goToReveal(idx) {
+    recalcScoresUpTo(idx);
+    renderRevealNoScore(idx);
   }
 
   function recalcScoresUpTo(upToIdx) {
@@ -587,8 +884,8 @@
     players.forEach(function (p, pi) {
       var ans = (p.answers.m && p.answers.m[index]) || ['', '', ''];
       if (fuzzyMatch(ans[0], q.title)) scores[pi].score += 100;
-      if (numericClose(ans[1], q.box_office, 0.2)) scores[pi].score += 100;
-      if (numericClose(ans[2], q.rt_score, 0.07)) scores[pi].score += 100;
+      scores[pi].score += numericTierScore(ans[1], q.box_office).pts;
+      scores[pi].score += numericTierScore(ans[2], q.rt_score).pts;
     });
   }
 

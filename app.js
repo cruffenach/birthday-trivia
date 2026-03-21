@@ -123,7 +123,21 @@
   }
 
   function updateStartButton() {
-    $('btn-start').disabled = !(state.name && state.emoji);
+    var btn = $('btn-start');
+    btn.disabled = !(state.name && state.emoji);
+    if (state.name.toUpperCase() === 'FJ') {
+      btn.textContent = 'Fuck You FJ \uD83D\uDD95';
+      btn.style.background = 'var(--incorrect)';
+      btn.style.borderColor = 'var(--incorrect)';
+      btn.style.transform = 'scale(1.08)';
+      btn.style.transition = 'all 0.3s ease';
+      setTimeout(function () { btn.style.transform = 'scale(1)'; }, 300);
+    } else {
+      btn.textContent = "Let's Go!";
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.style.transform = '';
+    }
   }
 
   // ── Navigation ─────────────────────────────
@@ -408,6 +422,18 @@
       desc.textContent = item.description;
       itemEl.appendChild(desc);
 
+      // Showcase image
+      if (item.image) {
+        var showcase = document.createElement('div');
+        showcase.className = 'pir-showcase';
+        var sImg = document.createElement('img');
+        sImg.className = 'pir-showcase-img';
+        sImg.src = item.image;
+        sImg.alt = item.name;
+        showcase.appendChild(sImg);
+        itemEl.appendChild(showcase);
+      }
+
       // Podium
       var podium = document.createElement('div');
       podium.className = 'podium-display';
@@ -422,29 +448,32 @@
 
       var valueDisplay = document.createElement('span');
       valueDisplay.className = 'podium-value' + (ans[itemIdx] ? '' : ' empty');
-      valueDisplay.textContent = ans[itemIdx] ? formatWithCommas(ans[itemIdx]) : '0';
+      valueDisplay.textContent = ans[itemIdx] ? formatPrice(ans[itemIdx]) : '0';
       if (ans[itemIdx]) screen.classList.add('has-value');
       screen.appendChild(valueDisplay);
 
       var input = document.createElement('input');
       input.type = 'text';
-      input.inputMode = 'numeric';
-      input.pattern = '[0-9]*';
+      input.inputMode = 'decimal';
       input.className = 'podium-input';
       input.value = ans[itemIdx] || '';
 
       input.addEventListener('input', function () {
-        var digits = input.value.replace(/[^0-9]/g, '');
-        input.value = digits;
-        state.answers.pir[index][itemIdx] = digits;
-        if (digits) {
-          valueDisplay.textContent = formatWithCommas(digits);
+        var cleaned = input.value.replace(/[^0-9.]/g, '');
+        // Only allow one decimal point
+        var parts = cleaned.split('.');
+        if (parts.length > 2) cleaned = parts[0] + '.' + parts.slice(1).join('');
+        input.value = cleaned;
+        state.answers.pir[index][itemIdx] = cleaned;
+        if (cleaned) {
+          valueDisplay.textContent = formatPrice(cleaned);
           valueDisplay.classList.remove('empty');
           screen.classList.add('has-value');
         } else {
           valueDisplay.textContent = '0';
           valueDisplay.classList.add('empty');
           screen.classList.remove('has-value');
+
         }
         updateTimeline();
       });
@@ -649,6 +678,15 @@
     updateRT(value);
   }
 
+  function formatPrice(str) {
+    var s = str + '';
+    var parts = s.split('.');
+    var whole = (parts[0] || '0').replace(/^0+/, '') || '0';
+    whole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (parts.length > 1) return whole + '.' + parts[1];
+    return whole;
+  }
+
   function formatWithCommas(str) {
     var num = (str + '').replace(/^0+/, '') || '0';
     return num.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -835,8 +873,12 @@
     $('submit-name').textContent = state.name;
 
     var encoded = encodeAnswers();
-    var fullUrl = window.location.origin + window.location.pathname + '#' + encoded;
-    $('url-display').value = fullUrl;
+    var fullUrl = window.location.origin + window.location.pathname + '#' + encoded.forUrl;
+    $('url-display').value = encoded.raw;
+
+    // Text Collin button — sends raw data, not a URL
+    var smsUrl = 'sms:4802806571&body=' + encodeURIComponent(encoded.raw);
+    $('text-collin-btn').href = smsUrl;
 
     // Count unanswered
     var total = 0;
@@ -891,25 +933,53 @@
         return items.map(function (v) { return v || ''; });
       })
     };
-    return 'data=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(data)))));
+    var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+    var b64url = b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return { forUrl: 'data=' + encodeURIComponent(b64), raw: b64url };
   }
 
-  function decodePlayerUrl(url) {
-    try {
-      var hash;
-      if (url.indexOf('#') >= 0) {
-        hash = url.substring(url.indexOf('#') + 1);
-      } else {
-        hash = url;
-      }
-      var params = new URLSearchParams(hash);
-      var dataStr = params.get('data');
-      if (!dataStr) return null;
-      var json = decodeURIComponent(escape(atob(dataStr)));
-      return JSON.parse(json);
-    } catch (e) {
-      return null;
+  function decodePlayerUrl(input) {
+    if (!input) return null;
+    input = input.trim();
+
+    function b64urlToStandard(s) {
+      s = s.replace(/-/g, '+').replace(/_/g, '/');
+      while (s.length % 4) s += '=';
+      return s;
     }
+
+    function tryDecode(b64str) {
+      try {
+        var standard = b64urlToStandard(b64str);
+        var binary = atob(standard);
+        var json = decodeURIComponent(escape(binary));
+        return JSON.parse(json);
+      } catch (e) {
+        console.log('[DECODE] failed:', e.message);
+        return null;
+      }
+    }
+
+    // Try as full URL with #data=
+    if (input.indexOf('#') >= 0) {
+      var hash = input.substring(input.indexOf('#') + 1);
+      var params = new URLSearchParams(hash);
+      var d = params.get('data');
+      if (d) {
+        var r = tryDecode(decodeURIComponent(d));
+        if (r) return r;
+      }
+    }
+
+    // Try as data=XXXXX
+    if (input.indexOf('data=') >= 0) {
+      var after = input.substring(input.indexOf('data=') + 5);
+      var r = tryDecode(after);
+      if (r) return r;
+    }
+
+    // Try as raw base64url string
+    return tryDecode(input);
   }
 
   // Expose for results page
@@ -950,6 +1020,9 @@
   // ── Initialize ─────────────────────────────
 
   function init() {
+    // Skip player mode init if we're not on the player page
+    if (!$('emoji-grid')) return;
+
     initWelcome();
 
     $('prev-btn').addEventListener('click', goPrev);
